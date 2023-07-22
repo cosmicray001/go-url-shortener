@@ -7,6 +7,7 @@ import (
 )
 
 func (app *application) ping(w http.ResponseWriter, r *http.Request) {
+	app.urlBank.UpdateHitCount(1, 1)
 	fmt.Fprintln(w, "ok")
 }
 

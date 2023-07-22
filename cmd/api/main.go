@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
+	"database/sql"
 	"flag"
+	"github.com/cosmicray001/go-url-shortener/internal/models"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +17,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	urlBank  models.UrlBankModel
 }
 
 func main() {
@@ -21,6 +26,12 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	dbString := os.Getenv("DB_URL")
+	db, err := openDB(dbString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	flag.Parse()
 
 	infoLogFile, err := os.OpenFile("./tmp/info.log", os.O_RDWR|os.O_CREATE, 0666)
@@ -40,6 +51,9 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		urlBank: models.UrlBankModel{
+			DB: db,
+		},
 	}
 
 	tlsConfig := &tls.Config{
@@ -60,4 +74,20 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+}
+
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
