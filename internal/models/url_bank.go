@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -35,15 +36,40 @@ func (m *UrlBankModel) Insert(urlBank *UrlBank) error {
 }
 
 func (m *UrlBankModel) Get(shortUrl string) (*UrlBank, error) {
-	return nil, nil
+	var urlBank UrlBank
+	query := `SELECT id, actual_url, short_url, total_hit, created_at FROM url_bank WHERE short_url = $1`
+	err := m.DB.QueryRow(query, shortUrl).Scan(
+		&urlBank.ID,
+		&urlBank.ActualUrl,
+		&urlBank.ShortUrl,
+		&urlBank.TotalHit,
+		&urlBank.CreatedAt,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, errors.New("models: no matching record found")
+		default:
+			return nil, err
+		}
+	}
+	return &urlBank, nil
 }
 
-func (m *UrlBankModel) UpdateHitCount(ID int64, value int64) error {
-	query := `SELECT id, actual_url, short_url, created_at FROM url_bank WHERE id = $1`
-	var urlBank UrlBank
-	err := m.DB.QueryRow(query, 1).Scan(&urlBank.ID, &urlBank.ActualUrl, &urlBank.ShortUrl, &urlBank.CreatedAt)
-	_ = err
-	return nil
+func (m *UrlBankModel) UpdateHitCountAndGet(urlBank *UrlBank) error {
+	query := `UPDATE url_bank SET total_hit = total_hit + 1 WHERE short_url = $1 
+	RETURNING id, actual_url, short_url, total_hit, created_at`
+	args := []interface{}{
+		urlBank.ShortUrl,
+	}
+	return m.DB.QueryRow(query, args...).Scan(
+		&urlBank.ID,
+		&urlBank.ActualUrl,
+		&urlBank.ShortUrl,
+		&urlBank.TotalHit,
+		&urlBank.CreatedAt,
+	)
 }
 
 func (m *UrlBankModel) AllUrl() ([]UrlBank, error) {

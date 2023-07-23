@@ -9,11 +9,13 @@ import (
 )
 
 func (app *application) ping(w http.ResponseWriter, r *http.Request) {
-	app.urlBank.UpdateHitCount(1, 1)
 	env := envelope{
 		"status": "up and running",
 	}
-	app.writeJSON(w, http.StatusOK, env, nil)
+	err := app.writeJSON(w, http.StatusOK, env, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) createShortUrl(w http.ResponseWriter, r *http.Request) {
@@ -43,15 +45,30 @@ func (app *application) createShortUrl(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	app.writeJSON(w, http.StatusCreated, envelope{"results": urlBank}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"results": urlBank}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
 
 func (app *application) getLongUrl(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	shortUrl := params.ByName("shortUrl")
-	fmt.Fprintf(w, "short url: %s", shortUrl)
+	var urlBank models.UrlBank
+	urlBank.ShortUrl = shortUrl
+	err := app.urlBank.UpdateHitCountAndGet(&urlBank)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	err = app.writeJSON(w, http.StatusCreated, envelope{"results": urlBank}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
 
 func (app *application) urlList(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "all the url list with hit count")
+	_, _ = fmt.Fprintln(w, "all the url list with hit count")
 }
