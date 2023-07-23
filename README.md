@@ -21,7 +21,7 @@ Response:
 Request Method: POST
 
 Request Body:
-```
+```json
 {
   "url": "https://www.youtube.com/watch?v=TLB5MY9BBa4&ab_channel=CoderDave"
 }
