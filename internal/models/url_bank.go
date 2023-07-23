@@ -72,7 +72,27 @@ func (m *UrlBankModel) UpdateHitCountAndGet(urlBank *UrlBank) error {
 	)
 }
 
-func (m *UrlBankModel) AllUrl() ([]UrlBank, error) {
+func (m *UrlBankModel) AllUrl(limit, offset int) (*[]UrlBank, error) {
+	var urlBankList []UrlBank
+	query := `SELECT * FROM url_bank ORDER BY Id DESC LIMIT $1 OFFSET $2`
+	rows, err := m.DB.Query(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		var urlBank UrlBank
+		rows.Scan(&urlBank.ID, &urlBank.ActualUrl, &urlBank.ShortUrl, &urlBank.TotalHit, &urlBank.CreatedAt)
+		urlBankList = append(urlBankList, urlBank)
+	}
+	return &urlBankList, nil
+}
 
-	return nil, nil
+func (m *UrlBankModel) UrlCount() (int, error) {
+	var count int
+	query := `SELECT COUNT(*) FROM url_bank`
+	err := m.DB.QueryRow(query).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
 }

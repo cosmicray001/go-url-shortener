@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"github.com/cosmicray001/go-url-shortener/internal/models"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
+	"strconv"
 )
 
 func (app *application) ping(w http.ResponseWriter, r *http.Request) {
@@ -70,5 +70,25 @@ func (app *application) getLongUrl(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) urlList(w http.ResponseWriter, r *http.Request) {
-	_, _ = fmt.Fprintln(w, "all the url list with hit count")
+	queryValues := r.URL.Query()
+	limit, err := strconv.Atoi(queryValues.Get("limit"))
+	if err != nil {
+		limit = 10
+	}
+	offset, err := strconv.Atoi(queryValues.Get("offset"))
+	if err != nil {
+		offset = 0
+	}
+
+	urlBankList, err := app.urlBank.AllUrl(limit, offset)
+	count, _ := app.urlBank.UrlCount()
+	response := envelope{
+		"count":   count,
+		"results": urlBankList,
+	}
+	err = app.writeJSON(w, http.StatusOK, response, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
 }
