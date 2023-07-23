@@ -10,7 +10,10 @@ import (
 
 func (app *application) ping(w http.ResponseWriter, r *http.Request) {
 	app.urlBank.UpdateHitCount(1, 1)
-	fmt.Fprintln(w, "ok")
+	env := envelope{
+		"status": "up and running",
+	}
+	app.writeJSON(w, http.StatusOK, env, nil)
 }
 
 func (app *application) createShortUrl(w http.ResponseWriter, r *http.Request) {
