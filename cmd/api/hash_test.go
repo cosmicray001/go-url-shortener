@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestHumanDate(t *testing.T) {
+func TestGetMD5Hash(t *testing.T) {
 	tests := []struct {
 		name string
 		text string
