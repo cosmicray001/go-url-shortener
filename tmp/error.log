@@ -1,1 +1,2 @@
-ERROR	2023/07/22 03:47:25 server.go:3215: http: TLS handshake error from 127.0.0.1:51833: remote error: tls: unknown certificate
+ERROR	2023/07/23 17:20:31 server.go:3215: http: TLS handshake error from 127.0.0.1:50032: remote error: tls: unknown certificate
+ERROR	2023/07/23 02:08:03 error.go:9: pq: syntax error at or near ")"

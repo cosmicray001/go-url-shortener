@@ -6,23 +6,32 @@ import (
 )
 
 type UrlBank struct {
-	ID        int64
-	ActualUrl string
-	ShortUrl  string
-	TotalHit  int64
-	CreatedAt time.Time
+	ID        int64     `json:"id"`
+	ActualUrl string    `json:"actual_url"`
+	ShortUrl  string    `json:"short_url"`
+	TotalHit  int64     `json:"total_hit"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type UrlBankModel struct {
 	DB *sql.DB
 }
 
-func (m *UrlBankModel) CheckExistUrl(actualUrl string) (bool, error) {
-	return false, nil
+func (m *UrlBankModel) CheckExistUrl(shortUrl string) (bool, error) {
+	var exists bool
+
+	query := "SELECT EXISTS(SELECT true FROM url_bank WHERE short_url = $1)"
+
+	err := m.DB.QueryRow(query, shortUrl).Scan(&exists)
+
+	return exists, err
 }
 
-func (m *UrlBankModel) Insert(actualUrl string, shortUrl string) error {
-	return nil
+func (m *UrlBankModel) Insert(urlBank *UrlBank) error {
+	query := `INSERT INTO url_bank (actual_url, short_url, total_hit, created_at) VALUES($1, $2, $3, $4) RETURNING id, created_at`
+	args := []interface{}{urlBank.ActualUrl, urlBank.ShortUrl, 0, time.Now().UTC()}
+	err := m.DB.QueryRow(query, args...).Scan(&urlBank.ID, &urlBank.CreatedAt)
+	return err
 }
 
 func (m *UrlBankModel) Get(shortUrl string) (*UrlBank, error) {
