@@ -62,7 +62,7 @@ func (app *application) getLongUrl(w http.ResponseWriter, r *http.Request) {
 		app.notFoundResponse(w, r)
 		return
 	}
-	err = app.writeJSON(w, http.StatusCreated, envelope{"results": urlBank}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"results": urlBank}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
