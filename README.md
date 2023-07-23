@@ -53,3 +53,28 @@ Response:
     }
 }
 ```
+
+### 4. /api/urls?limit=10&offset=10
+Request Method: GET
+Query Parameter:
+```text
+limit = <<number>> // 10
+offset = <<number>> // 1
+```
+Response:
+```json
+{
+    "count": 15,
+    "results": [
+        {
+            "id": 14,
+            "actual_url": "https://www.example.com/",
+            "short_url": "8797b6c7",
+            "total_hit": 0,
+            "created_at": "2023-07-23T17:16:09.239242Z"
+        }
+    ]
+}
+```
+
+

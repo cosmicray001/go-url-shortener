@@ -1,0 +1,1 @@
+DB_URL=postgres://<username>:<password>@<host>:<port>/database_name
