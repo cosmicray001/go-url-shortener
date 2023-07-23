@@ -28,8 +28,8 @@ func (app *application) createShortUrl(w http.ResponseWriter, r *http.Request) {
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	if input.Url == "" {
-		app.badRequestResponse(w, r, errors.New("url can not be empty"))
+	if validURL := isValidURL(input.Url); !validURL {
+		app.badRequestResponse(w, r, errors.New("invalid url"))
 		return
 	}
 	shortUrl, err := app.generateShortUrl(input.Url)
