@@ -10,6 +10,7 @@
 ### 1. /api/ping 
 Request Method: GET
 
+
 Response:
 ```json
 {
